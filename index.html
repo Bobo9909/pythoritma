@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pythoritma</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(to right, #ffeaa7, #fab1a0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 10px;
+      box-sizing: border-box;
+      transition: background 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    header {
+      margin-bottom: 10px;
+      font-size: 24px;
+      font-weight: 600;
+      color: #2d3436;
+      text-align: center;
+      width: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-shadow: none;
+    }
+
+    .container {
+      display: flex;
+      width: 840px;
+      height: 560px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      background: white;
+      max-width: 100%;
+    }
+
+    .left-panel {
+      width: 80%;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      padding: 0;
+      box-sizing: border-box;
+      aspect-ratio: 1 / 1;
+      min-width: 0;
+      position: relative;
+      background-color: rgba(255, 224, 167, 0.596);
+      background-image:
+        radial-gradient(rgba(194, 178, 128, 0.15) 1px, transparent 0),
+        radial-gradient(rgba(194, 178, 128, 0.1) 1px, transparent 0),
+        linear-gradient(to bottom, #f4e2d8, #e6d0b8);
+      background-size:
+        5px 5px,
+        10px 10px,
+        100% 100%;
+      background-blend-mode: multiply;
+    }
+    .left-panel::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
+      background-size: 3px 3px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .grid-cell {
+      border: 1px solid rgba(255, 224, 167, 0);
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 10px;
+      color: rgba(0, 0, 0, 0.075);
+      user-select: none;
+    }
+
+    .grid-cell.hint-visible {
+      color: rgba(0, 0, 0, 0.5) !important;
+      transition: color 2s;
+      z-index: 19;
+    }
+
+    .grid-cell.goal {
+      background-color: #74b9ff;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { color: #51a1f0; }
+      50% { color: #a29bfe; }
+      100% { color: #51a1f0; }
+    }
+
+    .grid-cell.goal {
+      background: none !important;
+      animation: none !important;
+      position: relative;
+    }
+    .goal .goal-x {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 60%;
+      height: 60%;
+      transform: translate(-50%, -50%) rotate(-8deg);
+      z-index: 11;
+      pointer-events: none;
+    }
+    .goal .goal-x::before,
+    .goal .goal-x::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 80%;
+      height: 16%;
+      background: linear-gradient(90deg, #c62828 0 30%, #c62828 40% 60%, #c62828 70% 100%);
+      border-radius: 8px;
+      transform: translate(-50%, -50%) rotate(45deg);
+      box-shadow: 0 2px 8px #c6282822;
+    }
+    .goal .goal-x::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    .ball {
+      border-radius: 50%;
+      position: absolute;
+      z-index: 20;
+      background:
+        conic-gradient(
+          #fff 0deg 60deg,
+          #f44336 60deg 120deg,
+          #fff 120deg 180deg,
+          #2196f3 180deg 240deg,
+          #fff 240deg 300deg,
+          #ffeb3b 300deg 360deg
+        );
+      box-shadow:
+        7px 20px 2.5px -15px rgba(0, 0, 0, 0.1),
+        5px 20px 2.5px -15px rgba(0, 0, 0, 0.25),
+        0px 20px 2.5px -14px rgba(0,0,0,0.5),
+        -5px 20px 2.5px -15px rgba(0, 0, 0, 0.25),
+        -7px 20px 2.5px -15px rgba(0, 0, 0, 0.1),
+        0px 0px 5px 5px rgba(110, 98, 76, 0.199),
+        inset 2px 2px 10px 0 rgba(255,255,255,0.7),
+        inset -6px -6px 16px 0 rgba(0,0,0,0.13);
+      transition: top 0.35s cubic-bezier(.4,0,.2,1), left 0.35s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+    }
+
+    .ball::after {
+      content: "";
+      position: absolute;
+      left: 22%;
+      top: 20%;
+      width: 30%;
+      height: 30%;
+      background: radial-gradient(circle, #fff 80%, #eee 100%);
+      border-radius: 50%;
+      opacity: 0.85;
+      pointer-events: none;
+      box-shadow: 0 0 2px 1px #fff8;
+    }
+
+    @keyframes spin360 {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes ball-pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(2); }
+      100% { transform: scale(1); }
+    }
+
+    .ball.spin {
+      animation: spin360 1s cubic-bezier(.4,0,.2,1);
+      box-shadow:
+      0px 0px 5px 5px rgba(110, 98, 76, 0.199),
+      inset 2px 2px 10px 0 rgba(255,255,255,0.7),
+      inset -6px -6px 16px 0 rgba(0,0,0,0.13);
+    }
+
+    @keyframes ball-pop-burst {
+      0%   { transform: scale(1); }
+      20%  { transform: scale(1.25); }
+      100% { transform: scale(0); }
+    }
+
+    .right-panel {
+      width: 50%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      background: #f3db8a;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    textarea {
+      flex: 1;
+      resize: none;
+      font-size: 16px;
+      padding: 10px;
+      border: 2px solid #fdcb6e;
+      border-radius: 10px;
+      background: #fffde7;
+      min-height: 100px;
+      font-family: inherit;
+    }
+
+    textarea::placeholder {
+      color: rgba(0, 0, 0, 0.3);
+      font-style: italic;
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px;
+      font-size: 16px;
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      transition: transform 0.2s;
+      min-width: 0;
+      box-shadow: 5px 5px 28px rgba(0,0,0,0.15), 0 1.5px 0 #fff4 inset;
+      background-image: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(0,0,0,0.04) 100%);
+      border: 1.5px solid #00000028;
+      outline: none;
+      transition: 
+        box-shadow 0.2s, 
+        background 0.2s, 
+        border-color 0.2s, 
+        transform 0.15s cubic-bezier(.4,0,.2,1);
+    }
+
+    button:active {
+      box-shadow: 0 1px 2px rgba(0,0,0,0.13) inset;
+      transform: scale(0.98);
+      border-color: #bdbdbd;
+    }
+
+    button:focus-visible {
+      border-color: #452fc0b4;
+      box-shadow: 0 0 0 2px #452fc044;
+    }
+
+    #run {
+      background-color: #00b894;
+    }
+
+    #reset {
+      background-color: #e17055;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-weight: 600;
+      color: #2d3436;
+      font-size: 18px;
+      text-align: center;
+      min-height: 24px;
+      transition: opacity 0.3s ease;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-shadow: none;
+    }
+
+    #highscore-indicator {
+      animation: pulse 1.2s infinite;
+    }
+
+    .instructions {
+      position: fixed;
+      transition: opacity 0.3s;
+      margin-top: 10px;
+      width: 600px;
+      padding: 10px;
+      background-color: #fdcb6e;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 16px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      font-weight: 500;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: rgba(45, 52, 54, 0.85);
+      max-width: 100%;
+      box-sizing: border-box;
+      user-select: none;
+      max-height: 120px;
+      font-size: clamp(12px, 2vw, 16px);
+      z-index: 30;
+    }
+    .instructions.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+    #close-instructions {
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      background: #fdcb6e;
+      border: none;
+      font-size: 22px;
+      font-weight: bold;
+      color: #b85900;
+      cursor: pointer;
+      z-index: 31;
+      padding: 0 6px;
+      line-height: 1;
+      box-shadow: 0 1px 4px #0002;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+        height: auto;
+        width: 90%;
+        max-width: 350px;
+        border-radius: 15px;
+      }
+      .left-panel, .right-panel {
+        width: 100%;
+      }
+      .left-panel {
+        aspect-ratio: 1/1;
+      }
+      .grid-cell {
+        font-size: 8px;
+        z-index: 2;
+      }
+      textarea {
+        min-height: 100px;
+        font-size: 14px;
+      }
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
+      #message {
+        font-size: 16px;
+      }
+      .instructions {
+        font-size: 14px;
+        padding: 8px;
+        max-width: 80%;
+      }
+
+      .cactus-spike {
+        width: 2px; height: 2px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        max-width: 90%;
+        max-width: 350px;
+        height: auto;
+        border-radius: 10px;
+      }
+      .left-panel {
+        aspect-ratio: 1/1;
+      }
+      textarea {
+        min-height: 130px;
+      }
+      button {
+        font-size: 13px;
+        padding: 8px;
+      }
+      header {
+        margin-top: 10px;
+        font-size: 20px;
+      }
+      .instructions {
+        font-size: 12px;
+        padding: 8px;
+        max-height: 90px;
+      }
+      .cactus-spike {
+      width: 1px; height: 1px;
+      }
+    }
+
+    @media (max-height: 700px) {
+  html, body {
+    height: 100vh;
+    width: 100vw;
+    overflow:scroll;
+  }
+  body {
+    
+    width: 100vw;
+    height: 700px;
+    overflow:scroll;
+    min-height: 0 !important;
+    min-width: 0 !important;
+  }
+
+  .right-panel {
+    overflow:scroll;
+  }
+  .container {
+    max-height: 90vh;
+    height: auto;
+  }
+}
+
+    .pythoritma-3d {
+      display: inline-block;
+      font-size: 48px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(120deg, rgba(255,224,167,1) 25%, #fffde4 50%, #ffe57f 100%);
+      background-clip: text;
+      text-shadow: 0 0 45px rgba(0,0,0,0.3);
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-stroke: 2px rgba(45, 52, 54, 0.85);
+      transform: skew(-7deg, -0deg);
+      margin-bottom: 0;
+    }
+
+    .cactus {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 65%;
+      height: 90%;
+      transform: translate(-50%, -55%);
+      z-index: 5;
+      pointer-events: none;
+      box-shadow: 0px 8px 6px -6px rgba(70, 32, 6, 0.925);
+    }
+
+    .cactus-main {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 28%;
+      height: 80%;
+      background: linear-gradient(120deg, #8fd16a 60%, #4e944f 100%);
+      border-radius: 45% 45% 50% 50% / 55% 55% 100% 100%;
+      transform: translate(-50%, -50%);
+      box-shadow:
+        0px 6px 0px 0px rgba(14, 70, 6, 0.712),
+        inset 8px 0 16px #b6e38888,
+        inset -8px 0 16px #3b6e2a88;
+      border: 2px solid #5e8c3a;
+      overflow: visible;
+    }
+
+    .cactus-arm-left {
+      position: absolute;
+      left: 5%; top: 22%;
+      width: 20%; height: 38%;
+      background: linear-gradient(120deg, #8fd16a 60%, #4e944f 100%);
+      border-radius: 70% 90% 60% 80% / 80% 60% 80% 60%;
+      transform: rotate(-28deg);
+      box-shadow:
+        0px 3px 0px 0px rgba(22, 116, 9, 0.925),
+        inset 4px 0 10px #b6e38888,
+        inset -4px 0 10px #3b6e2a88;
+      border: 2px solid #5e8c3a;
+    }
+
+    .cactus-arm-right {
+      position: absolute;
+      right: 5%; top: 18%;
+      width: 20%; height: 38%;
+      background: linear-gradient(120deg, #8fd16a 60%, #4e944f 100%);
+      border-radius: 90% 70% 80% 60% / 60% 80% 60% 80%;
+      transform: rotate(28deg);
+      box-shadow:
+        0px 3px 0px 0px rgba(22, 116, 9, 0.925),
+        inset 4px 0 10px #b6e38888,
+        inset -4px 0 10px #3b6e2a88;
+      border: 2px solid #5e8c3a;
+    }
+
+    .cactus-spike {
+      position: absolute;
+      width: 3px; height: 3px;
+      background: #ffe600;
+      border-radius: 1px;
+      box-shadow: 0 0 3px rgb(255, 0, 0);
+    }
+    .cactus-spike.s1 { left: 50%; top: 10%; transform: rotate(100deg);}
+    .cactus-spike.s2 { left: 35%; top: 70%; transform: rotate(85deg);}
+    .cactus-spike.s3 { left: 35%; top: 15%; transform: rotate(20deg);}
+    .cactus-spike.s4 { left: 45%; top: 25%; transform: rotate(-20deg);}
+    .cactus-spike.s5 { left: 0%; top: 25%; transform: rotate(8deg);}
+    .cactus-spike.s6 { left: 95%; top: 25%; transform: rotate(90deg);}
+    .cactus-spike.s7 { left: -5%; top: 35%; transform: rotate(20deg);}
+    .cactus-spike.s8 { left: 80%; top: 35%; transform: rotate(-35deg);}
+    .cactus-spike.s9 { left: 25%; top: 45%; transform: rotate(-12deg);}
+    .cactus-spike.s10 { left: 55%; top: 45%; transform: rotate(18deg);}
+    .cactus-spike.s11 { left: 35%; top: 55%; transform: rotate(-5deg);}
+    .cactus-spike.s12 { left: 55%; top: 65%; transform: rotate(50deg);}
+    .cactus-spike.s13 { left: 5%; top: 50%; transform: rotate(-18deg);}
+    .cactus-spike.s14 { left: 75%; top: 50%; transform: rotate(48deg);}
+    
+    .lang-switch {
+      cursor: pointer;
+      color: rgb(255, 255, 255);
+      font-size: 14px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+    }
+    .lang-switch:hover {
+      background: #f1f2f6;
+      color: rgba(45, 52, 54, 0.85);
+    }
+    .lang-switch.selected {
+      background: #fdcb6e;
+      color: rgba(45, 52, 54, 0.85);
+    }
+  </style>
+</head>
+<body>
+  <!-- Dil seçici -->
+  <div style="position:absolute;top:12px;right:24px;z-index:10;display:flex;gap:8px;">
+    <span id="lang-tr" class="lang-switch selected">Türkçe</span>
+    <span id="lang-en" class="lang-switch">English</span>
+  </div>
+  <div style="position:absolute;top:12px;left:24px;z-index:10;display:flex;gap:8px;">
+    <span id="level-skip-btn" class="lang-switch" style="background:#fdcb6e;color:rgba(45,52,54,0.85);">^^</span>
+  </div>
+
+  <header>
+    <span class="pythoritma-3d">Pythoritma</span>
+  </header>
+
+  <div class="container">
+    <div class="left-panel" id="grid" style="position:relative;">
+      <svg id="hint-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;"></svg>
+    </div>
+    <div class="right-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px;">
+        <button id="hint-btn" style=" height: 32px; padding: 0; font-size: 14px; border-radius: 8px; border: none; background: #51a1f0; color: white; font-weight: bold; cursor: pointer; margin-left:auto;">İpucu</button>
+        <div id="highscore-indicator" style="font-size:16px;font-weight:bold;color:#452fc0b4;text-align:center;">Yüksek Skor: 0</div>
+        <button id="reset-highscore-btn" style="height: 32px; padding: 0 8px; font-size: 14px; border-radius: 8px; border: none; background: #452fc0b4; color: white; font-weight: bold; cursor: pointer;">Sıfırla</button>
+      </div>
+      <div style="display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; opacity: 0.75;">
+        <div id="level-indicator" style="font-size:16px;font-weight:600;color:#b85900;">Seviye: 1</div>
+        <div id="score-indicator" style="font-size:16px;font-weight:600;margin-left:10px;color:#000000da;">Puan: 0</div>
+        <div id="timer-indicator" style="font-size:16px;font-weight:600;margin-left:10px;min-width:60px;text-align:center;color:#000000da;">Süre: 60</div>
+      </div>
+      <textarea id="commands" placeholder="git&#10; sağ 2&#10; alt 3"></textarea>
+      <div class="button-row">
+        <button id="run">Çalıştır</button>
+        <button id="reset">Yenile</button>
+      </div>
+      <div id="message"></div>
+    </div>
+  </div>
+
+  <div class="instructions" id="instructions-box">
+    <button id="close-instructions" aria-label="Kapat">×</button>
+    <span class="instructions-text">
+      Oynanış: Topu; engellere çarpmadan, komutları kullanarak ve süre içinde hedefe ulaştırın.<br><br>
+      Komutlar: git, alt, üst, sağ ve sol.
+    </span>
+  </div>
+
+    <script>
+    const LANGUAGES = {
+    tr: {
+        run: "Çalıştır",
+        reset: "Yenile",
+        hint: "İpucu",
+        highscore: "Yüksek Skor",
+        resetHighscore: "Sıfırla",
+        level: "Seviye",
+        score: "Puan",
+        timer: "Süre",
+        instructions: `Oynanış: Topu; engellere çarpmadan, komutları kullanarak ve süre içinde hedefe ulaştırın.<br><br>Komutlar: git, alt, üst, sağ ve sol.`,
+        placeholder: "git\n sağ 2\n alt 3",
+        victory: level => `Tebrikler, ${level}. seviyeyi geçtiniz!`,
+        allLevels: "Tüm seviyeleri tamamladınız!",
+        firstCommand: "İlk komut olarak git yazınız.",
+        continueCommands: "Komut dizisine devam ediniz.",
+        indent: "Girinti yerine dikkat ediniz.",
+        trailingSpace: "Lütfen satır sonunda boşluk bırakmayınız.",
+        invalidCommand: "Lütfen geçerli komut giriniz.",
+        missingAmount: "Gitmek istediğiniz miktarı yazınız.",
+        hitObstacle: "Engele çarptınız. Tekrar başlayınız.",
+        missedGoal: "Hedefi ıskaladık!",
+        timeUp: "Süre bitti!",
+        goal: "Hedef",
+        directions: { right: "sağ", left: "sol", down: "alt", up: "üst", go: "git" }
+    },
+    en: {
+        run: "Run",
+        reset: "Refresh",
+        hint: "Hint",
+        highscore: "High Score",
+        resetHighscore: "Reset",
+        level: "Level",
+        score: "Score",
+        timer: "Time",
+        instructions: `Gameplay: Guide the ball to the goal using commands, without hitting obstacles and within the time limit.<br><br>Commands: go, down, up, right, left.`,
+        placeholder: "go\n right 2\n down 3",
+        victory: level => `Congratulations, you passed level ${level}!`,
+        allLevels: "You completed all levels!",
+        firstCommand: "Write go as the first command.",
+        continueCommands: "Continue the command sequence.",
+        indent: "Check indentation.",
+        trailingSpace: "Do not leave a space at the end of the line.",
+        invalidCommand: "Please enter a valid command.",
+        missingAmount: "Specify the amount to move.",
+        hitObstacle: "You hit an obstacle. Try again.",
+        missedGoal: "Missed the goal!",
+        timeUp: "Time's up!",
+        goal: "Goal",
+        directions: { right: "right", left: "left", down: "down", up: "up", go: "go" }
+    }
+    };
+    let currentLang = "tr";
+
+    function updateTexts() {
+    document.getElementById("run").textContent = LANGUAGES[currentLang].run;
+    document.getElementById("reset").textContent = LANGUAGES[currentLang].reset;
+    document.getElementById("hint-btn").textContent = LANGUAGES[currentLang].hint;
+    document.getElementById("reset-highscore-btn").textContent = LANGUAGES[currentLang].resetHighscore;
+    document.getElementById("highscore-indicator").textContent = `${LANGUAGES[currentLang].highscore}: ${getHighScore()}`;
+    document.getElementById("level-indicator").textContent = `${LANGUAGES[currentLang].level}: ${level}`;
+    document.getElementById("score-indicator").textContent = `${LANGUAGES[currentLang].score}: ${score}`;
+    document.getElementById("timer-indicator").textContent = `${LANGUAGES[currentLang].timer}: ${timer}`;
+    document.querySelector("#instructions-box .instructions-text").innerHTML = LANGUAGES[currentLang].instructions;
+    document.getElementById("commands").placeholder = LANGUAGES[currentLang].placeholder;
+    }
+
+    document.getElementById("lang-tr").onclick = () => {
+    currentLang = "tr";
+    updateTexts();
+    updateBallPosition();
+    document.getElementById("lang-tr").classList.add("selected");
+    document.getElementById("lang-en").classList.remove("selected");
+    };
+    document.getElementById("lang-en").onclick = () => {
+    currentLang = "en";
+    updateTexts();
+    updateBallPosition();
+    document.getElementById("lang-en").classList.add("selected");
+    document.getElementById("lang-tr").classList.remove("selected");
+    };
+
+    const gradients = [
+    ["#ffeaa7", "#fab1a0"],
+    ["#fab1a0", "#f8a5c2"],
+    ["#f8a5c2", "#e0c3fc"],
+    ["#e0c3fc", "#c8d6e5"],
+    ["#c8d6e5", "#a0c4ff"],
+    ["#a0c4ff", "#b9fbc0"],
+    ["#b9fbc0", "#f6f6b2"]
+    ];
+
+    function setBackgroundByLevel(level) {
+    const maxLevel = 20;
+    const idx = Math.min(Math.floor((level - 1) / (maxLevel / gradients.length)), gradients.length - 1);
+    const [color1, color2] = gradients[idx];
+    document.body.style.background = `linear-gradient(to right, ${color1}, ${color2})`;
+    }
+
+    function getHighScore() {
+    return parseInt(localStorage.getItem("pythoritma_highscore") || "0");
+    }
+    function setHighScore(val) {
+    localStorage.setItem("pythoritma_highscore", val);
+    }
+    function updateHighScoreDisplay() {
+    document.getElementById("highscore-indicator").textContent = `${LANGUAGES[currentLang].highscore}: ${getHighScore()}`;
+    }
+
+    function updateScoreDisplay() {
+    const scoreEl = document.getElementById("score-indicator");
+    scoreEl.textContent = `${LANGUAGES[currentLang].score}: ${score}`;
+    let green = Math.min(1, score / 50);
+    let r = Math.round(0 * (1 - green) + 0 * green);
+    let g = Math.round(0 * (1 - green) + 185 * green);
+    let b = Math.round(0 * (1 - green) + 148 * green);
+    scoreEl.style.color = `rgb(${r},${g},${b})`;
+
+    if (score > getHighScore()) {
+        setHighScore(score);
+        updateHighScoreDisplay();
+    }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("reset-highscore-btn").onclick = function() {
+        setHighScore(0);
+        updateHighScoreDisplay();
+    };
+    updateHighScoreDisplay();
+    });
+
+    let cancelMovement = false;
+    let timer = 60;
+    let timerInterval = null;
+
+    function updateTimerDisplay() {
+    const timerEl = document.getElementById("timer-indicator");
+    timerEl.textContent = `${LANGUAGES[currentLang].timer}: ${timer}`;
+    let t = Math.max(0, Math.min(1, timer / 60));
+    let r = Math.round(231 * (1 - t));
+    let g = Math.round(76 * (1 - t));
+    let b = Math.round(60 * (1 - t));
+    timerEl.style.color = `rgb(${r},${g},${b})`;
+    }
+
+    function startTimer() {
+    clearInterval(timerInterval);
+    timer = 60;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        timer--;
+        updateTimerDisplay();
+        if (timer <= 0) {
+        clearInterval(timerInterval);
+        cancelMovement = true;
+        messageBox.textContent = LANGUAGES[currentLang].timeUp;
+        setTimeout(() => { messageBox.textContent = ""; }, 2000);
+        resetGame();
+        }
+    }, 1000);
+    }
+
+    function stopTimer() {
+    clearInterval(timerInterval);
+    }
+
+    let score = 0;
+    let lastHintCount = 0;
+
+    function manhattanDistance(a, b) {
+    return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+    }
+    const grid = document.getElementById("grid");
+    const runButton = document.getElementById("run");
+    const resetButton = document.getElementById("reset");
+    const commandsInput = document.getElementById("commands");
+    const messageBox = document.getElementById("message");
+
+    const gridSize = 10;
+    let ball = document.createElement("div");
+    ball.classList.add("ball");
+
+    let pos = { row: 0, col: 0 };
+    let startPos = { row: 0, col: 0 };
+    let goal = { row: 0, col: 0 };
+    let cells = [];
+
+    let running = false;
+    let victoryTimeout = null;
+
+    let hintActive = false;
+    let hintPath = [];
+
+    function findPath(start, end) {
+    const queue = [];
+    const visited = Array.from({ length: gridSize }, () => Array(gridSize).fill(false));
+    const prev = Array.from({ length: gridSize }, () => Array(gridSize).fill(null));
+    queue.push(start);
+    visited[start.row][start.col] = true;
+
+    const directions = [
+        { dr: 0, dc: 1 },
+        { dr: 1, dc: 0 },
+        { dr: 0, dc: -1 },
+        { dr: -1, dc: 0 }
+    ];
+
+    while (queue.length > 0) {
+        const curr = queue.shift();
+        if (curr.row === end.row && curr.col === end.col) break;
+        for (const { dr, dc } of directions) {
+        const nr = curr.row + dr;
+        const nc = curr.col + dc;
+        if (
+            nr >= 0 && nr < gridSize &&
+            nc >= 0 && nc < gridSize &&
+            !visited[nr][nc] &&
+            !isObstacle(nr, nc)
+        ) {
+            queue.push({ row: nr, col: nc });
+            visited[nr][nc] = true;
+            prev[nr][nc] = curr;
+        }
+        }
+    }
+
+    if (!visited[end.row][end.col]) return [];
+    let path = [];
+    let curr = end;
+    while (curr && !(curr.row === start.row && curr.col === start.col)) {
+        path.push(curr);
+        curr = prev[curr.row][curr.col];
+    }
+    path.reverse();
+    return path;
+    }
+
+    async function drawHintLineAnimated() {
+    const svg = document.getElementById("hint-svg");
+    svg.innerHTML = "";
+    if (!hintActive || !hintPath || hintPath.length === 0) return;
+
+    const cellWidth = grid.offsetWidth / gridSize;
+    const cellHeight = grid.offsetHeight / gridSize;
+
+    let points = [
+        [
+        pos.col * cellWidth + cellWidth / 2,
+        pos.row * cellHeight + cellHeight / 2
+        ]
+    ];
+    hintPath.forEach(cell => {
+        points.push([
+        cell.col * cellWidth + cellWidth / 2,
+        cell.row * cellHeight + cellHeight / 2
+        ]);
+    });
+
+    for (let i = 1; i < points.length; i++) {
+        const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+        const segmentPoints = points.slice(0, i + 1).map(p => p.join(",")).join(" ");
+        polyline.setAttribute("points", segmentPoints);
+        polyline.setAttribute("fill", "none");
+        polyline.setAttribute("stroke", "#e74c3c");
+        polyline.setAttribute("stroke-width", Math.max(2, cellWidth * 0.1));
+        polyline.setAttribute("stroke-dasharray", "8 8");
+        polyline.setAttribute("stroke-linecap", "round");
+        polyline.setAttribute("stroke-linejoin", "round");
+        svg.innerHTML = "";
+        svg.appendChild(polyline);
+        await new Promise(res => setTimeout(res, 60)); 
+        if (!hintActive) break; 
+    }
+    }
+
+    let level = 1;
+    const maxLevel = 20;
+    let obstacles = [];
+
+    function getObstacleCount() {
+    return Math.min(5 + (level - 1), 20);
+    }
+
+    function randomObstaclePositions() {
+    const obs = [];
+    while (obs.length < getObstacleCount()) {
+        const posObs = {
+        row: Math.floor(Math.random() * 8) + 1,
+        col: Math.floor(Math.random() * 8) + 1
+        };
+        if (
+        (posObs.row !== pos.row || posObs.col !== pos.col) &&
+        (posObs.row !== goal.row || posObs.col !== goal.col) &&
+        !obs.some(o => o.row === posObs.row && o.col === posObs.col)
+        ) {
+        obs.push(posObs);
+        }
+    }
+    return obs;
+    }
+
+    function drawObstacles() {
+    obstacles.forEach(obs => {
+        const idx = obs.row * gridSize + obs.col;
+        if (!cells[idx].innerHTML.includes('cactus')) {
+        cells[idx].innerHTML += `
+            <div class="cactus">
+            <div class="cactus-main"></div>
+            <div class="cactus-arm-left"></div>
+            <div class="cactus-arm-right"></div>
+            <div class="cactus-spike s1"></div>
+            <div class="cactus-spike s2"></div>
+            <div class="cactus-spike s3"></div>
+            <div class="cactus-spike s4"></div>
+            <div class="cactus-spike s5"></div>
+            <div class="cactus-spike s6"></div>
+            <div class="cactus-spike s7"></div>
+            <div class="cactus-spike s8"></div>
+            <div class="cactus-spike s9"></div>
+            <div class="cactus-spike s10"></div>
+            <div class="cactus-spike s11"></div>
+            <div class="cactus-spike s12"></div>
+            <div class="cactus-spike s13"></div>
+            <div class="cactus-spike s14"></div>
+            </div>
+        `;
+        }
+        cells[idx].style.background = "none";
+        cells[idx].style.opacity = "1";
+    });
+    }
+
+    function isObstacle(row, col) {
+    return obstacles.some(o => o.row === row && o.col === col);
+    }
+
+    function createGrid() {
+
+    const svg = document.getElementById("hint-svg");
+    const hasSvg = !!svg;
+    const hasBall = grid.contains(ball);
+
+    grid.innerHTML = '';
+    cells = [];
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+        const cell = document.createElement("div");
+        cell.classList.add("grid-cell");
+        cell.textContent = `${col + 1},${row + 1}`;
+        grid.appendChild(cell);
+        cells.push(cell);
+        }
+    }
+
+    if (hasSvg) grid.appendChild(svg);
+
+    if (!grid.contains(ball)) grid.appendChild(ball);
+    }
+
+    function randomPosition() {
+    return {
+        row: Math.floor(Math.random() * gridSize),
+        col: Math.floor(Math.random() * gridSize)
+    };
+    }
+
+    function updateBallPosition() {
+    ball.style.transform = "";
+    cells.forEach(cell => {
+        if (hintActive) {
+          cell.classList.add("hint-visible");
+        } else {
+          cell.classList.remove("hint-visible");
+        }
+        if (!cell.innerHTML.includes('cactus') && !cell.innerHTML.includes('goal-x')) {
+        cell.innerHTML = cell.textContent;
+        }
+        cell.style.background = "";
+        cell.style.opacity = "";
+    });
+    drawObstacles();
+    if (hintActive) drawHintLineAnimated();
+    else document.getElementById("hint-svg").innerHTML = "";
+
+    const cellWidth = grid.offsetWidth / gridSize;
+    const cellHeight = grid.offsetHeight / gridSize;
+    const ballSize = Math.min(cellWidth, cellHeight) * 0.7;
+    ball.style.width = ball.style.height = ballSize + "px";
+    ball.style.left = (pos.col * cellWidth + (cellWidth - ballSize) / 2) + "px";
+    ball.style.top = (pos.row * cellHeight + (cellHeight - ballSize) / 2) + "px";
+    }
+
+    function setGoal() {
+    cells.forEach(cell => {
+        cell.classList.remove("goal");
+        if (cell.innerHTML.includes('cactus')) {
+        cell.innerHTML = cell.innerHTML.replace(/<div class="goal-x"><\/div>/g, '');
+        } else {
+        cell.innerHTML = cell.textContent;
+        }
+    });
+    const index = goal.row * gridSize + goal.col;
+    cells[index].classList.add("goal");
+    if (cells[index].innerHTML.includes('cactus')) {
+        cells[index].innerHTML += `<div class="goal-x"></div>`;
+    } else {
+        cells[index].innerHTML = `<div class="goal-x"></div>`;
+    }
+    }
+
+    function checkVictory() {
+    if (pos.row === goal.row && pos.col === goal.col) {
+        if (!running) {
+        ball.classList.add("spin");
+          ball.addEventListener("animationend", function handler() {
+              ball.classList.remove("spin");
+              ball.removeEventListener("animationend", handler);
+          }
+        );
+        stopTimer();
+        let totalMoves = 0;
+        for (let command of commandsInput.value.split("\n").map(c => c.trim()).filter(c => c)) {
+            const match = command.match(/\((\d+)\)/);
+            if (match) {
+            totalMoves += parseInt(match[1]);
+            }
+        }
+        const minPathLength = findPath(startPos, goal).length;
+        let elapsed = 60 - timer;
+        let timeScore = 0;
+        if (elapsed < 20) timeScore = 0;
+        else if (elapsed < 40) timeScore = 1;
+        else timeScore = 3;
+        let moveScore = 0;
+        if (totalMoves === minPathLength) {
+            moveScore = 10;
+        } else if (totalMoves > minPathLength) {
+            moveScore = -(totalMoves - minPathLength + 10);
+        } else {
+            moveScore = minPathLength - totalMoves + 10;
+        }
+        score += moveScore + timeScore;
+        updateScoreDisplay();
+        if (score > getHighScore()) {
+            setHighScore(score);
+            updateHighScoreDisplay();
+        }
+        messageBox.textContent = LANGUAGES[currentLang].victory(level);
+        if (victoryTimeout) clearTimeout(victoryTimeout);
+        victoryTimeout = setTimeout(() => {
+            if (level < maxLevel) {
+            level++;
+            resetGame(true);
+            messageBox.textContent = "";
+            } else {
+            messageBox.textContent = LANGUAGES[currentLang].allLevels;
+            setTimeout(() => {
+                level = 1;
+                resetGame();
+                messageBox.textContent = "";
+            }, 5000);
+            }
+        }, 2000);
+        }
+    } else {
+        messageBox.textContent = "";
+        if (victoryTimeout) {
+        clearTimeout(victoryTimeout);
+        victoryTimeout = null;
+        }
+    }
+    }
+
+    function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function getCommandRegex() {
+    if (currentLang === "tr") {
+        return /^(alt|üst|sağ|sol)\s+(\d+)$/iu;
+    } else {
+        return /^(down|up|right|left)\s+(\d+)$/iu;
+    }
+    }
+    function getCommandKeyword(cmd) {
+    if (currentLang === "tr") {
+        return cmd.trim().toLowerCase();
+    } else {
+        const map = { right: "sağ", left: "sol", down: "alt", up: "üst" };
+        return map[cmd.trim().toLowerCase()] || cmd.trim().toLowerCase();
+    }
+    }
+    function getGoKeyword() {
+    return currentLang === "tr" ? "git" : "go";
+    }
+
+    function minTurnHintPath(start, end, obstacles = []) {
+    const queue = [];
+    const visited = Array.from({ length: gridSize }, () =>
+        Array.from({ length: gridSize }, () => ({ up: Infinity, down: Infinity, left: Infinity, right: Infinity }))
+    );
+    const dirs = [
+        { dr: -1, dc: 0, name: "up" },
+        { dr: 1, dc: 0, name: "down" },
+        { dr: 0, dc: -1, name: "left" },
+        { dr: 0, dc: 1, name: "right" }
+    ];
+
+    for (const dir of dirs) {
+        visited[start.row][start.col][dir.name] = 0;
+        queue.push({
+        row: start.row,
+        col: start.col,
+        path: [],
+        dir: dir.name,
+        turns: 0
+        });
+    }
+
+    let bestPath = null;
+    let minTurns = Infinity;
+
+    while (queue.length > 0) {
+        const curr = queue.shift();
+        if (curr.row === end.row && curr.col === end.col) {
+        if (curr.turns < minTurns) {
+            minTurns = curr.turns;
+            bestPath = curr.path;
+        }
+        continue;
+        }
+        for (const dir of dirs) {
+        const nr = curr.row + dir.dr;
+        const nc = curr.col + dir.dc;
+        if (
+            nr >= 0 && nr < gridSize &&
+            nc >= 0 && nc < gridSize &&
+            !obstacles.some(o => o.row === nr && o.col === nc)
+        ) {
+            const newTurns = curr.dir === dir.name ? curr.turns : curr.turns + 1;
+            if (visited[nr][nc][dir.name] > newTurns) {
+            visited[nr][nc][dir.name] = newTurns;
+            queue.push({
+                row: nr,
+                col: nc,
+                path: [...curr.path, { row: nr, col: nc }],
+                dir: dir.name,
+                turns: newTurns
+            });
+            }
+        }
+        }
+    }
+    return bestPath || [];
+    }
+
+    async function runCommands(commands) {
+    running = true;
+    hintActive = false;
+    cancelMovement = false;
+    let startTime = Date.now();
+    const lines = commandsInput.value
+        .split('\n')
+        .map(l => l.replace(/\r/g, ''))
+        .filter(l => l.trim().length > 0);
+
+    if (lines.length === 0 || lines[0].trim().toLowerCase() !== getGoKeyword()) {
+        messageBox.textContent = LANGUAGES[currentLang].firstCommand;
+        setTimeout(() => { messageBox.textContent = ""; }, 2000);
+        running = false;
+        return;
+    }
+    if (lines.length === 1) {
+        messageBox.textContent = LANGUAGES[currentLang].continueCommands;
+        setTimeout(() => { messageBox.textContent = ""; }, 2000);
+        running = false;
+        return;
+    }
+    for (let i = 1; i < lines.length; i++) {
+        if (!/^(\s+)/.test(lines[i])) {
+        messageBox.textContent = LANGUAGES[currentLang].indent;
+        setTimeout(() => { messageBox.textContent = ""; }, 2000);
+        running = false;
+        return;
+        }
+        const line = lines[i].trim();
+        const sayiMatch = getCommandRegex().exec(line);
+        if (sayiMatch && /\s+$/.test(lines[i])) {
+        messageBox.textContent = LANGUAGES[currentLang].trailingSpace;
+        setTimeout(() => { messageBox.textContent = ""; }, 2000);
+        running = false;
+        return;
+        }
+        if (!sayiMatch) {
+        if (!getCommandRegex().test(line)) {
+            messageBox.textContent = LANGUAGES[currentLang].invalidCommand;
+        } else {
+            messageBox.textContent = LANGUAGES[currentLang].missingAmount;
+        }
+        setTimeout(() => { messageBox.textContent = ""; }, 2000);
+        running = false;
+        return;
+        }
+    }
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].replace(/^[\s\uFEFF\xA0]+/, "");
+        const sayiMatch = getCommandRegex().exec(line);
+        const direction = getCommandKeyword(sayiMatch[1]);
+        const steps = parseInt(sayiMatch[2]);
+        for (let j = 0; j < steps; j++) {
+        if (cancelMovement) return;
+        let newRow = pos.row;
+        let newCol = pos.col;
+        switch (direction) {
+            case "sağ":
+                newCol = (pos.col + 1) % gridSize;
+                break;
+            case "sol":
+                newCol = (pos.col - 1 + gridSize) % gridSize;
+                break;
+            case "alt":
+                newRow = (pos.row + 1) % gridSize;
+                break;
+            case "üst":
+                newRow = (pos.row - 1 + gridSize) % gridSize;
+                break;
+        }
+        // Önce hareket ettir
+        pos.row = newRow;
+        pos.col = newCol;
+        updateBallPosition();
+        await sleep(400);
+
+        // Sonra engel üstünde mi kontrol et
+        if (isObstacle(pos.row, pos.col)) {
+        // Patlama animasyonu (hızlı ve başta büyüyerek)
+          ball.style.animation = "ball-pop-burst 0.75s cubic-bezier(.4,0,.8,1)";
+          messageBox.textContent = LANGUAGES[currentLang].hitObstacle;
+          cancelMovement = true;
+          await sleep(750);
+          // Topu eski haline getir ve oyunu resetle
+          ball.style.animation = "";
+          ball.style.transform = "";
+          updateBallPosition();
+          level = 1;
+          resetGame();
+          setTimeout(() => {
+              messageBox.textContent = "";
+          }, 2000);
+          running = false;
+          return;
+      }
+      }
+    }
+    running = false;
+    checkVictory();
+    if (!(pos.row === goal.row && pos.col === goal.col)) {
+        messageBox.textContent = LANGUAGES[currentLang].missedGoal;
+        await sleep(2000);
+        messageBox.textContent = "";
+        pos = { ...startPos };
+        updateBallPosition();
+    }
+    }
+
+    function resetGame(isLevelUp = false) {
+    stopTimer();
+    timer = 60;
+    updateTimerDisplay();
+    if (!isLevelUp) {
+        score = 0;
+        updateScoreDisplay();
+    }
+    if (victoryTimeout) {
+        clearTimeout(victoryTimeout);
+        victoryTimeout = null;
+    }
+    do {
+        pos = randomPosition();
+        startPos = { ...pos };
+        goal = randomPosition();
+    } while (
+        (goal.row === pos.row && goal.col === pos.col) ||
+        manhattanDistance(pos, goal) < 8
+    );
+    createGrid();
+    hintActive = false;
+    hintPath = [];
+    let tryCount = 0;
+    do {
+        obstacles = randomObstaclePositions();
+        let path = findPath(pos, goal);
+        tryCount++;
+    } while (
+        (findPath(pos, goal).length > 0 && findPath(pos, goal).length <= manhattanDistance(pos, goal)) &&
+        tryCount < 30
+    );
+    updateBallPosition();
+    setGoal();
+    document.getElementById("level-indicator").textContent = `${LANGUAGES[currentLang].level}: ${level}`;
+    commandsInput.value = "";
+    running = false;
+    startTimer();
+    setBackgroundByLevel(level);
+    updateTexts();
+    }
+
+    runButton.addEventListener("click", () => {
+    if (running) return;
+    const commands = commandsInput.value.split("\n").map(c => c.trim()).filter(c => c);
+    runCommands(commands);
+    });
+
+    resetButton.addEventListener("click", () => {
+    cancelMovement = true;
+    level = 1;
+    setBackgroundByLevel(level);
+    resetGame();
+    });
+    commandsInput.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") {
+        e.preventDefault();
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + 1;
+    }
+    });
+
+    resetGame();
+    startTimer();
+    const hintBtn = document.getElementById("hint-btn");
+    hintBtn.addEventListener("click", () => {
+    if (running) return;
+    hintActive = !hintActive;
+    if (hintActive) {
+        let path = minTurnHintPath(pos, goal, obstacles);
+        if (path && path.length > 0) {
+        hintPath = path;
+        lastHintCount = hintPath.length;
+        hintBtn.style.background = "#3a7bbd";
+        } else {
+        hintPath = findPath(pos, goal);
+        lastHintCount = hintPath.length;
+        hintBtn.style.background = "#51a1f0";
+        }
+    } else {
+        hintPath = [];
+        lastHintCount = 0;
+        hintBtn.style.background = "#51a1f0";
+        document.getElementById("hint-svg").innerHTML = "";
+    }
+    updateBallPosition();
+    });
+    setBackgroundByLevel(level);
+    updateTexts();
+    document.getElementById("close-instructions").onclick = function() {
+      document.getElementById("instructions-box").classList.add("hide");
+    };
+
+    document.getElementById("level-skip-btn").onclick = function() {
+  if (level < maxLevel) {
+    level++;
+    resetGame(true);
+    messageBox.textContent = "";
+  } else {
+    messageBox.textContent = LANGUAGES[currentLang].allLevels;
+    setTimeout(() => {
+      level = 1;
+      resetGame();
+      messageBox.textContent = "";
+    }, 3000);
+  }
+};
+    </script>
+</body>
+</html>
